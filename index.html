@@ -1,0 +1,1033 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Al-Tuba Oil Depot Report</title>
+
+<style>
+
+:root {
+
+  --navy:#10243a; --blue:#1769aa; --green:#18864b;
+
+  --orange:#d97706; --purple:#7048a8; --red:#c0392b;
+
+  --bg:#f2f5f9; --card:#ffffff; --text:#1e293b;
+
+}
+
+* { box-sizing:border-box; }
+
+body {
+
+  margin:0; background:var(--bg); color:var(--text);
+
+  font-family:Arial,Tahoma,sans-serif; font-size:15px;
+
+}
+
+header {
+
+  background:linear-gradient(135deg,#10243a,#1769aa);
+
+  color:white; padding:22px 14px; text-align:center;
+
+}
+
+header h1 { margin:0 0 7px; font-size:25px; }
+
+header p { margin:0; opacity:.9; }
+
+.container { max-width:1100px; margin:18px auto; padding:0 12px; }
+
+.toolbar,.panel,.summary-card {
+
+  background:var(--card); border-radius:13px; padding:15px;
+
+  box-shadow:0 3px 12px #15263b12; margin-bottom:15px;
+
+}
+
+.toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+
+button {
+
+  border:0; border-radius:8px; padding:11px 14px;
+
+  font-size:14px; font-weight:bold; cursor:pointer; color:white;
+
+  background:var(--blue);
+
+}
+
+button:active { transform:scale(.98); }
+
+.green { background:var(--green); }
+
+.orange { background:var(--orange); }
+
+.purple { background:var(--purple); }
+
+.dark { background:var(--navy); }
+
+.red { background:var(--red); }
+
+input,select {
+
+  border:1px solid #cbd5e1; border-radius:7px; padding:11px;
+
+  font-size:16px; background:white; color:#172033; max-width:100%;
+
+}
+
+label { display:block; font-weight:bold; margin-bottom:6px; }
+
+.meta-grid {
+
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+
+  gap:12px; margin-bottom:15px;
+
+}
+
+.field { min-width:0; }
+
+.field input { width:100%; }
+
+.summary-grid {
+
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px;
+
+  margin-bottom:16px;
+
+}
+
+.summary-card { color:white; margin:0; text-align:center; padding:17px 8px; }
+
+.summary-card h3 { font-size:14px; margin:0 0 12px; }
+
+.total { font-size:clamp(19px,3.3vw,29px); font-weight:bold; overflow-wrap:anywhere; }
+
+.avail { background:var(--blue); }
+
+.free { background:var(--green); }
+
+.flow { background:var(--orange); }
+
+.receive { background:var(--purple); }
+
+h2 { font-size:19px; margin:0 0 13px; }
+
+.table-wrap { overflow-x:auto; }
+
+table { width:100%; border-collapse:collapse; min-width:760px; }
+
+th,td { padding:9px; border-bottom:1px solid #e2e8f0; text-align:center; }
+
+th { background:#eaf0f7; color:#172b43; }
+
+td input { width:125px; text-align:center; font-size:17px; }
+
+td .tank-name { width:100px; }
+
+.delete-row { background:var(--red); padding:8px 10px; }
+
+.note { color:#64748b; font-size:13px; line-height:1.6; }
+
+.history-item {
+
+  display:flex; align-items:center; justify-content:space-between;
+
+  gap:10px; padding:12px 0; border-bottom:1px solid #e2e8f0;
+
+  flex-wrap:wrap;
+
+}
+
+.history-item span { font-weight:bold; }
+
+footer { text-align:center; padding:22px 10px; color:#64748b; font-size:13px; }
+
+footer strong { color:var(--navy); }
+
+@media(max-width:620px) {
+
+  header h1 { font-size:21px; }
+
+  .summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+
+  .toolbar button { flex:1 1 42%; }
+
+  .container { margin-top:12px; }
+
+}
+
+@media print {
+
+  .toolbar,.no-print,footer { display:none!important; }
+
+  body { background:white; }
+
+  .panel,.summary-card { box-shadow:none; }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+  <h1 id="pageTitle">Al-Tuba Oil Depot</h1>
+
+  <p id="pageSubtitle">Daily Tank Report Management System</p>
+
+</header>
+
+<main class="container" id="reportArea">
+
+  <div class="toolbar no-print">
+
+    <button class="dark" id="langBtn" onclick="toggleLanguage()">العربية</button>
+
+    <button onclick="addTank()" id="addBtn">+ Add Tank</button>
+
+    <button class="green" onclick="saveReport()" id="saveBtn">Save Report</button>
+
+    <button class="orange" onclick="exportImage()" id="imageBtn">Export Image</button>
+
+    <button class="purple" onclick="shareWhatsApp()" id="whatsBtn">Share WhatsApp</button>
+
+    <button class="dark" onclick="window.print()" id="printBtn">Print / PDF</button>
+
+    <button class="red" onclick="newReport()" id="newBtn">New Report</button>
+
+  </div>
+
+  <section class="panel">
+
+    <h2 id="detailsTitle">Report Details</h2>
+
+    <div class="meta-grid">
+
+      <div class="field">
+
+        <label id="dateLabel" for="reportDate">Report Date</label>
+
+        <input type="date" id="reportDate">
+
+      </div>
+
+      <div class="field">
+
+        <label id="shiftLabel" for="reportShift">Shift</label>
+
+        <select id="reportShift">
+
+          <option value="Day">Day</option>
+
+          <option value="Night">Night</option>
+
+          <option value="Daily">Daily</option>
+
+        </select>
+
+      </div>
+
+      <div class="field">
+
+        <label id="operatorLabel" for="operator">Operator / Prepared By</label>
+
+        <input id="operator" placeholder="Name">
+
+      </div>
+
+      <div class="field">
+
+        <label id="notesLabel" for="notes">Notes</label>
+
+        <input id="notes" placeholder="Optional notes">
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <section class="summary-grid" aria-label="Automatic totals">
+
+    <div class="summary-card avail">
+
+      <h3>AVAIL</h3><div class="total" id="totalAvail">0</div>
+
+    </div>
+
+    <div class="summary-card free">
+
+      <h3>FREE</h3><div class="total" id="totalFree">0</div>
+
+    </div>
+
+    <div class="summary-card flow">
+
+      <h3>FLOW</h3><div class="total" id="totalFlow">0</div>
+
+    </div>
+
+    <div class="summary-card receive">
+
+      <h3>RECEIVE</h3><div class="total" id="totalReceive">0</div>
+
+    </div>
+
+  </section>
+
+  <section class="panel">
+
+    <h2 id="tankTitle">Tank Details</h2>
+
+    <p class="note" id="tableHint">
+
+      Enter the values for each tank. All four totals are calculated automatically.
+
+      Use the same unit for every tank.
+
+    </p>
+
+    <div class="table-wrap">
+
+      <table id="tankTable">
+
+        <thead>
+
+          <tr>
+
+            <th id="tankHead">Tank No.</th>
+
+            <th>AVAIL</th>
+
+            <th>FREE</th>
+
+            <th>FLOW</th>
+
+            <th>RECEIVE</th>
+
+            <th class="no-print" id="actionHead">Action</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="tankRows"></tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+  <section class="panel">
+
+    <h2 id="historyTitle">Saved Reports</h2>
+
+    <p class="note" id="historyHint">
+
+      Reports are saved in this browser on this device. Clearing browser data may remove them.
+
+    </p>
+
+    <div id="historyList"></div>
+
+  </section>
+
+</main>
+
+<footer>
+
+  <div id="footerDepot">Al-Tuba Oil Depot Management System</div>
+
+  <strong>Programmed by Abbas Jameel Ziad</strong>
+
+</footer>
+
+<script>
+
+const $ = id => document.getElementById(id);
+
+let language = "en";
+
+let tanks = [];
+
+let nextId = 1;
+
+const translations = {
+
+  en: {
+
+    title:"Al-Tuba Oil Depot",
+
+    subtitle:"Daily Tank Report Management System",
+
+    lang:"العربية", add:"+ Add Tank", save:"Save Report",
+
+    image:"Export Image", whats:"Share WhatsApp", print:"Print / PDF",
+
+    new:"New Report", details:"Report Details", date:"Report Date",
+
+    shift:"Shift", operator:"Operator / Prepared By", notes:"Notes",
+
+    tankTitle:"Tank Details", hint:"Enter the values for each tank. All four totals are calculated automatically. Use the same unit for every tank.",
+
+    tank:"Tank No.", action:"Action", history:"Saved Reports",
+
+    historyHint:"Reports are saved in this browser on this device. Clearing browser data may remove them.",
+
+    footer:"Al-Tuba Oil Depot Management System",
+
+    delete:"Delete", confirmDelete:"Delete this tank?",
+
+    tankName:"Tank", namePlaceholder:"Name", notesPlaceholder:"Optional notes",
+
+    saved:"Report saved on this device.", noHistory:"No saved reports yet.",
+
+    load:"Open", remove:"Delete", confirmReportDelete:"Delete this saved report?",
+
+    report:"Report", shiftOptions:["Day","Night","Daily"],
+
+    needRows:"Add at least one tank before saving.",
+
+    imageError:"Image export could not load. Check your internet connection and try again.",
+
+    imageName:"Al-Tuba-Oil-Depot-Report",
+
+    shareIntro:"Al-Tuba Oil Depot Report",
+
+    noShare:"WhatsApp could not be opened. Please try again.",
+
+    newConfirm:"Start a new report? The current unsaved entries will be cleared.",
+
+    day:"Day", night:"Night", daily:"Daily",
+
+    loaded:"Saved report opened."
+
+  },
+
+  ar: {
+
+    title:"مستودع طوبه النفطي",
+
+    subtitle:"نظام إدارة تقارير الخزانات اليومية",
+
+    lang:"English", add:"+ إضافة خزان", save:"حفظ التقرير",
+
+    image:"تصدير صورة", whats:"مشاركة واتساب", print:"طباعة / PDF",
+
+    new:"تقرير جديد", details:"تفاصيل التقرير", date:"تاريخ التقرير",
+
+    shift:"الوجبة", operator:"المشغل / إعداد التقرير", notes:"ملاحظات",
+
+    tankTitle:"تفاصيل الخزانات", hint:"أدخل قيم كل خزان، وستُحسب الإجماليات الأربعة تلقائيًا. استخدم الوحدة نفسها لجميع الخزانات.",
+
+    tank:"رقم الخزان", action:"الإجراء", history:"التقارير المحفوظة",
+
+    historyHint:"تُحفظ التقارير في هذا المتصفح على هذا الجهاز. قد يؤدي مسح بيانات المتصفح إلى حذفها.",
+
+    footer:"نظام إدارة مستودع طوبه النفطي",
+
+    delete:"حذف", confirmDelete:"هل تريد حذف هذا الخزان؟",
+
+    tankName:"خزان", namePlaceholder:"الاسم", notesPlaceholder:"ملاحظات اختيارية",
+
+    saved:"تم حفظ التقرير على هذا الجهاز.", noHistory:"لا توجد تقارير محفوظة حتى الآن.",
+
+    load:"فتح", remove:"حذف", confirmReportDelete:"هل تريد حذف هذا التقرير المحفوظ؟",
+
+    report:"تقرير", shiftOptions:["نهارية","ليلية","يومية"],
+
+    needRows:"أضف خزانًا واحدًا على الأقل قبل الحفظ.",
+
+    imageError:"تعذر تصدير الصورة. تحقق من اتصال الإنترنت وحاول مرة أخرى.",
+
+    imageName:"تقرير-مستودع-طوبه",
+
+    shareIntro:"تقرير مستودع طوبه النفطي",
+
+    noShare:"تعذر فتح واتساب. حاول مرة أخرى.",
+
+    newConfirm:"هل تريد بدء تقرير جديد؟ ستُمسح المدخلات الحالية غير المحفوظة.",
+
+    day:"نهارية", night:"ليلية", daily:"يومية",
+
+    loaded:"تم فتح التقرير المحفوظ."
+
+  }
+
+};
+
+function t(key) { return translations[language][key] || key; }
+
+function toggleLanguage() {
+
+  language = language === "en" ? "ar" : "en";
+
+  document.documentElement.lang = language;
+
+  document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+
+  $("pageTitle").textContent = t("title");
+
+  $("pageSubtitle").textContent = t("subtitle");
+
+  $("langBtn").textContent = t("lang");
+
+  $("addBtn").textContent = t("add");
+
+  $("saveBtn").textContent = t("save");
+
+  $("imageBtn").textContent = t("image");
+
+  $("whatsBtn").textContent = t("whats");
+
+  $("printBtn").textContent = t("print");
+
+  $("newBtn").textContent = t("new");
+
+  $("detailsTitle").textContent = t("details");
+
+  $("dateLabel").textContent = t("date");
+
+  $("shiftLabel").textContent = t("shift");
+
+  $("operatorLabel").textContent = t("operator");
+
+  $("notesLabel").textContent = t("notes");
+
+  $("tankTitle").textContent = t("tankTitle");
+
+  $("tableHint").textContent = t("hint");
+
+  $("tankHead").textContent = t("tank");
+
+  $("actionHead").textContent = t("action");
+
+  $("historyTitle").textContent = t("history");
+
+  $("historyHint").textContent = t("historyHint");
+
+  $("footerDepot").textContent = t("footer");
+
+  $("operator").placeholder = t("namePlaceholder");
+
+  $("notes").placeholder = t("notesPlaceholder");
+
+  const oldShift = $("reportShift").value;
+
+  $("reportShift").innerHTML = "";
+
+  [["Day","day"],["Night","night"],["Daily","daily"]].forEach(([value,key]) => {
+
+    const opt = document.createElement("option");
+
+    opt.value = value;
+
+    opt.textContent = t(key);
+
+    $("reportShift").appendChild(opt);
+
+  });
+
+  $("reportShift").value = oldShift;
+
+  renderTanks();
+
+  renderHistory();
+
+}
+
+function addTank(data = {}) {
+
+  tanks.push({
+
+    id:nextId++,
+
+    name:data.name || String(tanks.length + 1),
+
+    avail:data.avail ?? "",
+
+    free:data.free ?? "",
+
+    flow:data.flow ?? "",
+
+    receive:data.receive ?? ""
+
+  });
+
+  renderTanks();
+
+  calculateTotals();
+
+}
+
+function renderTanks() {
+
+  const body = $("tankRows");
+
+  body.innerHTML = "";
+
+  tanks.forEach(tank => {
+
+    const tr = document.createElement("tr");
+
+    const nameCell = document.createElement("td");
+
+    const nameInput = document.createElement("input");
+
+    nameInput.className = "tank-name";
+
+    nameInput.value = tank.name;
+
+    nameInput.setAttribute("aria-label", t("tank"));
+
+    nameInput.addEventListener("input", () => tank.name = nameInput.value);
+
+    nameCell.appendChild(nameInput);
+
+    tr.appendChild(nameCell);
+
+    ["avail","free","flow","receive"].forEach(field => {
+
+      const td = document.createElement("td");
+
+      const input = document.createElement("input");
+
+      input.type = "text";
+
+      input.inputMode = "decimal";
+
+      input.autocomplete = "off";
+
+      input.placeholder = "0";
+
+      input.value = tank[field];
+
+      input.setAttribute("aria-label", field.toUpperCase());
+
+      input.addEventListener("input", () => {
+
+        tank[field] = input.value;
+
+        calculateTotals();
+
+      });
+
+      td.appendChild(input);
+
+      tr.appendChild(td);
+
+    });
+
+    const actionCell = document.createElement("td");
+
+    actionCell.className = "no-print";
+
+    const del = document.createElement("button");
+
+    del.className = "delete-row";
+
+    del.textContent = t("delete");
+
+    del.onclick = () => {
+
+      if (confirm(t("confirmDelete"))) {
+
+        tanks = tanks.filter(item => item.id !== tank.id);
+
+        renderTanks();
+
+        calculateTotals();
+
+      }
+
+    };
+
+    actionCell.appendChild(del);
+
+    tr.appendChild(actionCell);
+
+    body.appendChild(tr);
+
+  });
+
+  calculateTotals();
+
+}
+
+function numberValue(value) {
+
+  const cleaned = String(value ?? "").replace(/,/g,"").trim();
+
+  if (cleaned === "") return 0;
+
+  const n = Number(cleaned);
+
+  return Number.isFinite(n) ? n : 0;
+
+}
+
+function formatNumber(n) {
+
+  return new Intl.NumberFormat(language === "ar" ? "en-US" : "en-US", {
+
+    maximumFractionDigits:3
+
+  }).format(n);
+
+}
+
+function calculateTotals() {
+
+  ["avail","free","flow","receive"].forEach(field => {
+
+    const total = tanks.reduce((sum,tank) => sum + numberValue(tank[field]),0);
+
+    $("total" + field.charAt(0).toUpperCase() + field.slice(1)).textContent = formatNumber(total);
+
+  });
+
+}
+
+function collectReport() {
+
+  return {
+
+    date:$("reportDate").value,
+
+    shift:$("reportShift").value,
+
+    operator:$("operator").value,
+
+    notes:$("notes").value,
+
+    tanks:tanks.map(({name,avail,free,flow,receive}) => ({
+
+      name,avail,free,flow,receive
+
+    })),
+
+    totals:{
+
+      avail:tanks.reduce((s,x)=>s+numberValue(x.avail),0),
+
+      free:tanks.reduce((s,x)=>s+numberValue(x.free),0),
+
+      flow:tanks.reduce((s,x)=>s+numberValue(x.flow),0),
+
+      receive:tanks.reduce((s,x)=>s+numberValue(x.receive),0)
+
+    }
+
+  };
+
+}
+
+function readHistory() {
+
+  try { return JSON.parse(localStorage.getItem("tubaDepotReports") || "[]"); }
+
+  catch(e) { return []; }
+
+}
+
+function writeHistory(list) {
+
+  try {
+
+    localStorage.setItem("tubaDepotReports",JSON.stringify(list));
+
+    return true;
+
+  } catch(e) {
+
+    alert(language === "ar"
+
+      ? "تعذر الحفظ. قد تكون مساحة التخزين ممتلئة أو غير متاحة."
+
+      : "Could not save. Storage may be full or unavailable.");
+
+    return false;
+
+  }
+
+}
+
+function saveReport() {
+
+  if (!tanks.length) { alert(t("needRows")); return; }
+
+  const report = collectReport();
+
+  report.id = Date.now();
+
+  const history = readHistory();
+
+  history.unshift(report);
+
+  if (writeHistory(history)) {
+
+    renderHistory();
+
+    alert(t("saved"));
+
+  }
+
+}
+
+function renderHistory() {
+
+  const list = $("historyList");
+
+  list.innerHTML = "";
+
+  const history = readHistory();
+
+  if (!history.length) {
+
+    list.textContent = t("noHistory");
+
+    return;
+
+  }
+
+  history.forEach(report => {
+
+    const item = document.createElement("div");
+
+    item.className = "history-item";
+
+    const label = document.createElement("span");
+
+    label.textContent = `${t("report")} — ${report.date || "—"} — ${report.shift || ""}`;
+
+    const actions = document.createElement("div");
+
+    actions.style.display = "flex";
+
+    actions.style.gap = "7px";
+
+    const open = document.createElement("button");
+
+    open.textContent = t("load");
+
+    open.onclick = () => loadReport(report.id);
+
+    const del = document.createElement("button");
+
+    del.className = "red";
+
+    del.textContent = t("remove");
+
+    del.onclick = () => {
+
+      if (confirm(t("confirmReportDelete"))) {
+
+        writeHistory(readHistory().filter(r => r.id !== report.id));
+
+        renderHistory();
+
+      }
+
+    };
+
+    actions.append(open,del);
+
+    item.append(label,actions);
+
+    list.appendChild(item);
+
+  });
+
+}
+
+function loadReport(id) {
+
+  const report = readHistory().find(r => r.id === id);
+
+  if (!report) return;
+
+  $("reportDate").value = report.date || "";
+
+  $("reportShift").value = report.shift || "Daily";
+
+  $("operator").value = report.operator || "";
+
+  $("notes").value = report.notes || "";
+
+  tanks = [];
+
+  nextId = 1;
+
+  (report.tanks || []).forEach(row => addTank(row));
+
+  if (!tanks.length) addTank();
+
+  renderTanks();
+
+  calculateTotals();
+
+  alert(t("loaded"));
+
+}
+
+function newReport() {
+
+  if (!confirm(t("newConfirm"))) return;
+
+  tanks = [];
+
+  nextId = 1;
+
+  $("reportDate").value = new Date().toISOString().slice(0,10);
+
+  $("reportShift").value = "Day";
+
+  $("operator").value = "";
+
+  $("notes").value = "";
+
+  addTank();
+
+}
+
+function reportText() {
+
+  const r = collectReport();
+
+  const shiftName = t(r.shift.toLowerCase()) || r.shift;
+
+  let lines = [
+
+    t("shareIntro"),
+
+    `${t("date")}: ${r.date || "—"}`,
+
+    `${t("shift")}: ${shiftName}`,
+
+    `${t("operator")}: ${r.operator || "—"}`,
+
+    "",
+
+    "AVAIL: " + formatNumber(r.totals.avail),
+
+    "FREE: " + formatNumber(r.totals.free),
+
+    "FLOW: " + formatNumber(r.totals.flow),
+
+    "RECEIVE: " + formatNumber(r.totals.receive),
+
+    "",
+
+    language === "ar" ? "تفاصيل الخزانات:" : "Tank details:"
+
+  ];
+
+  r.tanks.forEach(row => lines.push(
+
+    `${t("tank")} ${row.name}: AVAIL ${formatNumber(numberValue(row.avail))}, FREE ${formatNumber(numberValue(row.free))}, FLOW ${formatNumber(numberValue(row.flow))}, RECEIVE ${formatNumber(numberValue(row.receive))}`
+
+  ));
+
+  if (r.notes) lines.push("",t("notes")+": "+r.notes);
+
+  return lines.join("\n");
+
+}
+
+function shareWhatsApp() {
+
+  const url = "https://wa.me/?text=" + encodeURIComponent(reportText());
+
+  window.open(url,"_blank");
+
+}
+
+async function exportImage() {
+
+  if (typeof window.html2canvas === "undefined") {
+
+    try {
+
+      await new Promise((resolve,reject) => {
+
+        const script = document.createElement("script");
+
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+
+        script.onload = resolve;
+
+        script.onerror = reject;
+
+        document.head.appendChild(script);
+
+      });
+
+    } catch(e) {
+
+      alert(t("imageError"));
+
+      return;
+
+    }
+
+  }
+
+  try {
+
+    const canvas = await html2canvas($("reportArea"), {
+
+      scale:2, backgroundColor:"#f2f5f9", useCORS:true,
+
+      ignoreElements:el => el.classList && el.classList.contains("no-print")
+
+    });
+
+    const link = document.createElement("a");
+
+    link.download = t("imageName") + "-" + ($("reportDate").value || "report") + ".png";
+
+    link.href = canvas.toDataURL("image/png");
+
+    link.click();
+
+  } catch(e) {
+
+    alert(t("imageError"));
+
+  }
+
+}
+
+$("reportDate").value = new Date().toISOString().slice(0,10);
+
+addTank();
+
+addTank();
+
+addTank();
+
+renderHistory();
+
+</script>
+
+</body>
+
+</html>
